@@ -1,0 +1,9 @@
+packages:
+  "framer-motion": "For smooth scroll reveals and complex interactive animations"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility function to efficiently merge Tailwind CSS classes"
+
+notes:
+  - "This is a single-page application heavily relying on anchor links for navigation."
+  - "Using provided Unsplash URLs as they perfectly match the required food photography aesthetic."
+  - "No backend required for this static portfolio/menu site."
