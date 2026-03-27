@@ -2,6 +2,7 @@ import { Navbar } from "@/components/Navbar";
 import { Hero } from "@/components/Hero";
 import { Marquee } from "@/components/Marquee";
 import { Gallery } from "@/components/Gallery";
+import { Stats } from "@/components/Stats";
 import { Moments } from "@/components/Moments";
 import { IPLNights } from "@/components/IPLNights";
 import { Story } from "@/components/Story";
@@ -21,6 +22,7 @@ export default function Home() {
         <Hero />
         <Marquee />
         <Gallery />
+        <Stats />
         <Moments />
         <IPLNights />
         <Story />

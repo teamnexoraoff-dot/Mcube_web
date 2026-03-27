@@ -1,33 +1,53 @@
 import { motion } from "framer-motion";
 import { ReactNode } from "react";
 
+export type RevealVariant = "fade-up" | "fade-left" | "fade-right" | "scale" | "fade";
+
 interface RevealProps {
   children: ReactNode;
   delay?: number;
   className?: string;
-  direction?: "up" | "down" | "left" | "right" | "none";
+  variant?: RevealVariant;
+  direction?: "up" | "down" | "left" | "right" | "none"; // Kept for backwards compatibility
 }
 
-export function Reveal({ children, delay = 0, className = "", direction = "up" }: RevealProps) {
-  const directions = {
-    up: { y: 30, x: 0 },
-    down: { y: -30, x: 0 },
-    left: { x: 30, y: 0 },
-    right: { x: -30, y: 0 },
-    none: { x: 0, y: 0 }
+export function Reveal({ children, delay = 0, className = "", variant = "fade-up", direction }: RevealProps) {
+  
+  // Backwards compatibility for direction prop
+  let activeVariant = variant;
+  if (direction) {
+    if (direction === "left") activeVariant = "fade-left";
+    if (direction === "right") activeVariant = "fade-right";
+    if (direction === "down") activeVariant = "fade-up"; 
+  }
+
+  const variants = {
+    "fade-up": {
+      initial: { opacity: 0, y: 30 },
+      animate: { opacity: 1, y: 0 }
+    },
+    "fade-left": {
+      initial: { opacity: 0, x: 30 },
+      animate: { opacity: 1, x: 0 }
+    },
+    "fade-right": {
+      initial: { opacity: 0, x: -30 },
+      animate: { opacity: 1, x: 0 }
+    },
+    "scale": {
+      initial: { opacity: 0, scale: 0.95 },
+      animate: { opacity: 1, scale: 1 }
+    },
+    "fade": {
+      initial: { opacity: 0 },
+      animate: { opacity: 1 }
+    }
   };
 
   return (
     <motion.div
-      initial={{ 
-        opacity: 0, 
-        ...directions[direction]
-      }}
-      whileInView={{ 
-        opacity: 1, 
-        x: 0, 
-        y: 0 
-      }}
+      initial={variants[activeVariant].initial}
+      whileInView={variants[activeVariant].animate}
       viewport={{ once: true, margin: "-50px" }}
       transition={{
         duration: 0.8,

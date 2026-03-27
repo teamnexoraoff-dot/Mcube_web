@@ -1,11 +1,18 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, useScroll, useSpring } from "framer-motion";
 import { Menu, X, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const { scrollYProgress } = useScroll();
+  const scaleX = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
 
   useEffect(() => {
     const handleScroll = () => {
@@ -82,6 +89,12 @@ export function Navbar() {
         >
           {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
         </button>
+
+        {/* Progress Indicator */}
+        <motion.div
+          className="absolute bottom-0 left-0 right-0 h-[1.5px] bg-mcubes-gold origin-left"
+          style={{ scaleX }}
+        />
       </nav>
 
       {/* Mobile Nav Overlay */}

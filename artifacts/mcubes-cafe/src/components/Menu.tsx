@@ -1,8 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Reveal } from "./Reveal";
 import { SectionHeader } from "./SectionHeader";
-import { Instagram, ChevronRight } from "lucide-react";
+import { ChevronRight, ArrowRight, MessageCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 // Types
 type Category = 'roti' | 'aloo' | 'paneer' | 'gobi' | 'addon';
@@ -10,6 +11,7 @@ type Category = 'roti' | 'aloo' | 'paneer' | 'gobi' | 'addon';
 interface MenuItem {
   name: string;
   badge?: string;
+  desc?: string;
 }
 
 // Data
@@ -18,7 +20,7 @@ const menuData: Record<Exclude<Category, 'addon'>, { title: string; sub: string;
     title: "Roti (2) + Sabji + Salad",
     sub: "Choose your sabji — comes with 2 rotis and fresh salad",
     items: [
-      { name: "Butter Paneer Combo" },
+      { name: "Butter Paneer Combo", badge: "Popular" },
       { name: "Kadai Paneer Combo" },
       { name: "Masala Paneer Combo" },
       { name: "Paneer Burji Combo" },
@@ -29,7 +31,7 @@ const menuData: Record<Exclude<Category, 'addon'>, { title: string; sub: string;
     ]
   },
   aloo: {
-    title: "Aloo Paratha (2) + Sabji + Salad",
+    title: "Aloo Paratha (2) + Sabji",
     sub: "Stuffed aloo paratha with your choice of sabji and salad",
     items: [
       { name: "Plain Aloo Paratha Combo" },
@@ -41,10 +43,10 @@ const menuData: Record<Exclude<Category, 'addon'>, { title: string; sub: string;
     ]
   },
   paneer: {
-    title: "Paneer Paratha (2) + Sabji + Salad",
+    title: "Paneer Paratha (2) + Sabji",
     sub: "Stuffed paneer paratha with your choice of sabji and salad",
     items: [
-      { name: "Butter Paneer Combo", badge: "Popular" },
+      { name: "Butter Paneer Combo", badge: "Best Seller" },
       { name: "Kadai Paneer Combo" },
       { name: "Masala Paneer Combo" },
       { name: "Paneer Burji Combo" },
@@ -53,7 +55,7 @@ const menuData: Record<Exclude<Category, 'addon'>, { title: string; sub: string;
     ]
   },
   gobi: {
-    title: "Gobi Paratha (2) + Sabji + Salad",
+    title: "Gobi Paratha (2) + Sabji",
     sub: "Crispy gobi paratha with your choice of sabji and salad",
     items: [
       { name: "Plain Gobi Paratha Combo" },
@@ -72,196 +74,167 @@ const addonItems = [
   "Mixed Veg Gravy", "Dal Fry", "Dal Tadka", "Curd"
 ];
 
-const PREVIEW_IMGS = {
-  paratha: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1200&q=80",
-  roti: "https://images.unsplash.com/photo-1601050690597-df0568f70950?w=1200&q=80",
-  salad: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&q=80",
-  dal: "https://images.unsplash.com/photo-1574653853027-5382a3d23a15?w=1200&q=80",
-  paneer: "https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1200&q=80",
-  veg: "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=1200&q=80"
-};
-
 export function Menu() {
   const [activeTab, setActiveTab] = useState<Category>('roti');
-  const [preview, setPreview] = useState<{name: string, img: string}>({
-    name: 'Paneer Paratha Combo', 
-    img: PREVIEW_IMGS.paratha
-  });
-
-  const getPreviewImg = (name: string) => {
-    const l = name.toLowerCase();
-    if(l.includes('dal')) return PREVIEW_IMGS.dal;
-    if(l.includes('salad')) return PREVIEW_IMGS.salad;
-    if(l.includes('roti')) return PREVIEW_IMGS.roti;
-    if(l.includes('paratha')) return PREVIEW_IMGS.paratha;
-    if(l.includes('paneer')) return PREVIEW_IMGS.paneer;
-    if(l.includes('veg')) return PREVIEW_IMGS.veg;
-    return PREVIEW_IMGS.veg;
-  };
-
-  const handleHover = (name: string) => {
-    setPreview({ name, img: getPreviewImg(name) });
-  };
 
   return (
-    <section id="menu" className="py-20 md:py-24 px-6 md:px-16 bg-mcubes-surface">
-      <div className="max-w-7xl mx-auto">
-        <SectionHeader 
-          tag="Our Menu"
-          title={<>Every combo,<br/><em className="text-mcubes-gold italic pr-2">freshly made.</em></>}
-          subtitle="Pick your base. Choose your sabji. Salad included — simple, filling, and light."
+    <section id="menu" className="bg-mcubes-black relative">
+      {/* Hero Menu Image */}
+      <div className="w-full h-[300px] relative overflow-hidden hidden md:block">
+        <div className="absolute inset-0 bg-mcubes-black/60 z-10" />
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-mcubes-black z-10" />
+        <motion.img 
+          src="https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=1600&q=80"
+          className="w-full h-full object-cover origin-center"
+          initial={{ y: -50 }}
+          whileInView={{ y: 0 }}
+          transition={{ duration: 1.5, ease: "easeOut" }}
+          viewport={{ once: true }}
         />
+      </div>
 
-        {/* IG Embed Banner */}
-        <Reveal delay={0.2}>
-          <div className="mt-8 border border-mcubes-bdr rounded bg-mcubes-surface/60 backdrop-blur-md p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex flex-col">
-              <span className="font-mono text-[10px] tracking-[0.18em] uppercase text-mcubes-txt3">Menu (Instagram)</span>
-              <p className="text-[13px] text-mcubes-txt2 mt-1">Check our pinned post for exact pricing.</p>
+      <div className="py-20 md:py-24 px-6 md:px-16">
+        <div className="max-w-6xl mx-auto">
+          <SectionHeader 
+            tag="Our Menu"
+            title={<>Every combo,<br/><em className="text-mcubes-gold italic pr-2">freshly made.</em></>}
+            subtitle="Pick your base. Choose your sabji. Salad included — simple, filling, and light."
+          />
+
+          {/* Tabbed Interface */}
+          <div className="flex flex-col md:flex-row gap-8 lg:gap-16 mt-14 relative">
+            
+            {/* Sidebar Tabs */}
+            <div className="w-full md:w-[260px] flex-shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto hide-scrollbar pb-4 md:pb-0 z-10">
+              {[
+                { id: 'roti', label: 'Roti Combos' },
+                { id: 'aloo', label: 'Aloo Paratha' },
+                { id: 'paneer', label: 'Paneer Paratha' },
+                { id: 'gobi', label: 'Gobi Paratha' },
+                { id: 'addon', label: 'Add-Ons' }
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as Category)}
+                  className={cn(
+                    "flex-none text-left px-5 py-4 text-[15px] font-medium transition-all duration-300 relative group overflow-hidden md:rounded-r whitespace-nowrap md:whitespace-normal",
+                    activeTab === tab.id 
+                      ? "text-mcubes-gold bg-mcubes-surface" 
+                      : "text-mcubes-txt2 hover:text-mcubes-white hover:bg-white/5"
+                  )}
+                >
+                  {/* Left indicator for desktop */}
+                  <div className={cn(
+                    "absolute left-0 top-0 bottom-0 w-[3px] transition-all duration-300 hidden md:block",
+                    activeTab === tab.id ? "bg-mcubes-gold" : "bg-transparent group-hover:bg-mcubes-bdr2"
+                  )} />
+                  
+                  {/* Bottom indicator for mobile */}
+                  <div className={cn(
+                    "absolute left-0 bottom-0 right-0 h-[3px] transition-all duration-300 md:hidden",
+                    activeTab === tab.id ? "bg-mcubes-gold" : "bg-transparent"
+                  )} />
+
+                  <span className="relative z-10 flex items-center justify-between">
+                    {tab.label}
+                    {activeTab === tab.id && <ChevronRight className="w-4 h-4 hidden md:block" />}
+                  </span>
+                </button>
+              ))}
             </div>
+
+            {/* Content Panel */}
+            <div className="flex-1 min-h-[500px]">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={activeTab}
+                  initial={{ opacity: 0, x: 20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -20 }}
+                  transition={{ duration: 0.3, ease: "easeOut" }}
+                  className="bg-mcubes-surface/40 border border-mcubes-bdr rounded-md p-6 md:p-10 backdrop-blur-sm relative overflow-hidden"
+                >
+                  {/* Glow effect */}
+                  <div className="absolute -top-40 -right-40 w-80 h-80 bg-mcubes-gold/5 rounded-full blur-[100px] pointer-events-none" />
+
+                  {activeTab !== 'addon' ? (
+                    <>
+                      <div className="pb-8 mb-8 border-b border-mcubes-bdr/50 relative z-10">
+                        <h3 className="font-display text-3xl md:text-[38px] font-bold text-mcubes-white tracking-tight leading-[1.2]">
+                          {menuData[activeTab].title}
+                        </h3>
+                        <p className="text-[14px] text-mcubes-txt2 mt-3 tracking-[0.02em]">
+                          {menuData[activeTab].sub}
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3 relative z-10">
+                        {menuData[activeTab].items.map((item, idx) => (
+                          <div 
+                            key={idx}
+                            className="flex items-center justify-between p-4 border-l-2 border-transparent hover:border-mcubes-gold hover:bg-white/5 rounded-r group transition-all cursor-default"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="font-sans text-[15px] text-mcubes-txt group-hover:text-mcubes-white transition-colors">
+                                {item.name}
+                              </span>
+                              {item.badge && (
+                                <span className="font-mono text-[9px] tracking-[0.14em] uppercase bg-mcubes-gold/10 text-mcubes-gold px-2 py-0.5 rounded">
+                                  {item.badge}
+                                </span>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-3">
+                              <ArrowRight className="w-4 h-4 text-mcubes-gold opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                              {/* Veg Icon */}
+                              <div className="w-4 h-4 border-[1.5px] border-[#4CAF50] rounded-sm flex items-center justify-center flex-shrink-0 bg-mcubes-black">
+                                <div className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full"></div>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="pb-8 mb-8 border-b border-mcubes-bdr/50 relative z-10">
+                        <h3 className="font-display text-3xl md:text-[38px] font-bold text-mcubes-white tracking-tight leading-[1.2]">
+                          Choose & Add-On
+                        </h3>
+                        <p className="text-[14px] text-mcubes-txt2 mt-3 tracking-[0.02em]">
+                          Additional items to complete your meal
+                        </p>
+                      </div>
+                      
+                      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 relative z-10">
+                        {addonItems.map((item, idx) => (
+                          <div 
+                            key={idx}
+                            className="p-3.5 border border-mcubes-bdr rounded bg-mcubes-black/40 text-[14px] text-mcubes-txt2 hover:border-mcubes-gold/40 hover:text-mcubes-white hover:bg-mcubes-gold/5 transition-all text-center"
+                          >
+                            {item}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </motion.div>
+              </AnimatePresence>
+            </div>
+          </div>
+
+          {/* Sticky Order Button Container */}
+          <div className="mt-12 flex justify-center sticky bottom-6 z-40">
             <a 
-              href="https://www.instagram.com/p/DSKz5Y7D16s/?img_index=1" 
+              href="https://wa.me/917603824812" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-3 py-2.5 rounded-lg border border-mcubes-bdr2 bg-white/5 text-mcubes-white text-xs font-medium tracking-[0.06em] hover:border-mcubes-gold hover:text-mcubes-gold transition-all"
+              className="inline-flex items-center gap-2.5 bg-mcubes-gold text-mcubes-black font-medium tracking-[0.06em] px-8 py-4 rounded-full shadow-[0_8px_30px_rgba(232,176,0,0.25)] hover:shadow-[0_8px_40px_rgba(232,176,0,0.4)] hover:-translate-y-1 transition-all duration-300"
             >
-              <Instagram className="w-4 h-4" />
-              View Menu Post
+              <MessageCircle className="w-5 h-5 fill-mcubes-black" />
+              Order on WhatsApp
             </a>
           </div>
-        </Reveal>
-
-        {/* Interactive Menu Grid */}
-        <div className="grid lg:grid-cols-[220px_1fr_360px] gap-8 xl:gap-14 items-start mt-14">
-          
-          {/* Sidebar */}
-          <Reveal delay={0.1} className="lg:sticky lg:top-24 flex flex-row lg:flex-col gap-2 overflow-x-auto hide-scrollbar pb-2 lg:pb-0">
-            <div className="hidden lg:block font-mono text-[10px] tracking-[0.2em] uppercase text-mcubes-txt3 mb-4">Category</div>
-            {[
-              { id: 'roti', label: 'Roti Combos' },
-              { id: 'aloo', label: 'Aloo Paratha' },
-              { id: 'paneer', label: 'Paneer Paratha' },
-              { id: 'gobi', label: 'Gobi Paratha' },
-              { id: 'addon', label: 'Add-Ons' }
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as Category)}
-                className={cn(
-                  "flex-none lg:w-full text-left px-4 py-3 text-sm font-light border lg:border-y-0 lg:border-r-0 lg:border-l-2 rounded lg:rounded-none lg:rounded-r transition-all duration-200 relative",
-                  activeTab === tab.id 
-                    ? "text-mcubes-white border-mcubes-gold lg:bg-mcubes-gold/5 bg-mcubes-surface2" 
-                    : "text-mcubes-txt2 border-mcubes-bdr lg:border-l-mcubes-bdr hover:text-mcubes-white hover:bg-white/5"
-                )}
-              >
-                {tab.label}
-                {activeTab === tab.id && <ChevronRight className="hidden lg:block absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-mcubes-gold" />}
-              </button>
-            ))}
-          </Reveal>
-
-          {/* Main List */}
-          <Reveal delay={0.2} className="min-h-[500px]">
-            {activeTab !== 'addon' ? (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="pb-6 mb-6 border-b border-mcubes-bdr">
-                  <h3 className="font-display text-[32px] font-bold text-mcubes-white tracking-tight leading-[1.2]">
-                    {menuData[activeTab].title}
-                  </h3>
-                  <p className="text-[13px] text-mcubes-txt2 mt-2 tracking-[0.04em]">
-                    {menuData[activeTab].sub}
-                  </p>
-                </div>
-                
-                <div className="flex flex-col gap-1">
-                  {menuData[activeTab].items.map((item, idx) => (
-                    <div 
-                      key={idx}
-                      onMouseEnter={() => handleHover(item.name)}
-                      onClick={() => handleHover(item.name)}
-                      className="flex items-center justify-between p-3.5 border border-transparent rounded hover:bg-mcubes-gold/5 hover:border-mcubes-gold/20 hover:text-mcubes-white text-sm text-mcubes-txt transition-all cursor-pointer group"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div 
-                          className="w-10 h-10 rounded bg-mcubes-surface2 border border-mcubes-bdr flex-shrink-0 bg-cover bg-center group-hover:border-mcubes-gold/30 transition-colors"
-                          style={{ backgroundImage: `url(${getPreviewImg(item.name)})` }}
-                        />
-                        <span className="flex items-center flex-wrap gap-2">
-                          <span className="w-1.5 h-1.5 bg-mcubes-gold rounded-full opacity-70"></span>
-                          {item.name}
-                          {item.badge && (
-                            <span className="font-mono text-[9px] tracking-[0.14em] uppercase bg-mcubes-gold/10 border border-mcubes-gold/20 text-mcubes-gold px-2 py-0.5 rounded">
-                              {item.badge}
-                            </span>
-                          )}
-                        </span>
-                      </div>
-                      {/* Veg Icon */}
-                      <div className="w-3.5 h-3.5 border-[1.5px] border-[#4CAF50] rounded-sm flex items-center justify-center flex-shrink-0">
-                        <div className="w-1.5 h-1.5 bg-[#4CAF50] rounded-full"></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ) : (
-              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-                <div className="pb-6 mb-6 border-b border-mcubes-bdr">
-                  <h3 className="font-display text-[32px] font-bold text-mcubes-white tracking-tight leading-[1.2]">
-                    Choose & Add-On
-                  </h3>
-                  <p className="text-[13px] text-mcubes-txt2 mt-2 tracking-[0.04em]">
-                    Additional items to complete your meal
-                  </p>
-                </div>
-                
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                  {addonItems.map((item, idx) => (
-                    <div 
-                      key={idx}
-                      onMouseEnter={() => handleHover(item)}
-                      onClick={() => handleHover(item)}
-                      className="flex items-center gap-2.5 p-3 border border-mcubes-bdr rounded bg-mcubes-surface text-[13px] text-mcubes-txt2 hover:border-mcubes-gold/30 hover:text-mcubes-white hover:bg-mcubes-gold/5 transition-all cursor-pointer group"
-                    >
-                      <div 
-                        className="w-8 h-8 rounded bg-mcubes-surface2 border border-mcubes-bdr flex-shrink-0 bg-cover bg-center group-hover:border-mcubes-gold/30 transition-colors"
-                        style={{ backgroundImage: `url(${getPreviewImg(item)})` }}
-                      />
-                      {item}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </Reveal>
-
-          {/* Sticky Preview */}
-          <Reveal delay={0.3} className="hidden lg:block sticky top-24">
-            <div className="border border-mcubes-bdr bg-mcubes-surface2/80 backdrop-blur-md rounded overflow-hidden">
-              <div className="p-4.5 pb-0">
-                <div className="font-display text-[22px] font-bold text-mcubes-white tracking-tight leading-[1.1]">
-                  Dish Preview
-                </div>
-                <div className="font-mono text-[10px] tracking-[0.16em] uppercase text-mcubes-txt3 mt-2 line-clamp-1">
-                  {preview.name}
-                </div>
-              </div>
-              <div className="mt-3.5 border-y border-mcubes-bdr relative h-[320px] bg-mcubes-black">
-                <img 
-                  key={preview.img}
-                  src={preview.img} 
-                  alt={preview.name} 
-                  className="w-full h-full object-cover filter brightness-[0.82] saturate-[1.02] animate-in fade-in duration-500"
-                />
-                <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(232,176,0,0.15),transparent_45%),linear-gradient(to_top,rgba(12,12,12,0.7)0%,transparent_55%)] pointer-events-none"></div>
-                <div className="absolute left-4 right-4 bottom-3 flex items-center justify-between">
-                  <span className="font-mono text-[10px] tracking-[0.16em] uppercase text-mcubes-white truncate pr-4">
-                    {preview.name}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </Reveal>
 
         </div>
       </div>
